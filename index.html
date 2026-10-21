@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Para Blanca</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;600&display=swap">
+<style>
+  /* Una sola estética oscura a propósito: negro (su favorito), azul y sus flores, peonías y hortensias */
+  :root {
+    --negro: #07080c;
+    --noche: #10131c;
+    --tarjeta: #161b28;
+    --linea: #263048;
+    --azul: #4f86ff;
+    --azul-suave: #9dbaff;
+    --peonia: #f2a7c3;
+    --texto: #e9edf7;
+    --texto-suave: #a7b0c6;
+    --display: 'Dancing Script', 'Brush Script MT', cursive;
+    --cuerpo: 'Quicksand', 'Segoe UI', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: var(--cuerpo);
+    background: var(--negro);
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(79,134,255,.18), transparent 55%),
+      radial-gradient(ellipse at 90% 100%, rgba(242,167,195,.08), transparent 50%);
+    background-attachment: fixed;
+    color: var(--texto);
+    overflow-x: hidden;
+  }
+  .flotantes { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .flotantes span {
+    position: absolute; bottom: -40px; opacity: .55;
+    animation: subir linear forwards;
+  }
+  @keyframes subir { to { transform: translateY(-115vh) rotate(25deg); opacity: 0; } }
+
+  .pantalla {
+    position: relative; z-index: 1;
+    min-height: 100vh; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 0;
+    padding-block: 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    text-align: center;
+  }
+  .pantalla.activa { display: flex; animation: aparecer .8s ease; }
+  @keyframes aparecer { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+  h1, h2, .firma { font-family: var(--display); font-weight: 700; text-wrap: balance; }
+  h1 { font-size: clamp(2.4rem, 8vw, 4rem); margin-bottom: 8px; color: var(--texto); text-shadow: 0 0 24px rgba(79,134,255,.45); }
+  h2 { font-size: clamp(1.9rem, 6vw, 2.8rem); margin-bottom: 20px; color: var(--azul-suave); }
+  .sub { color: var(--texto-suave); font-weight: 600; margin-bottom: 36px; }
+
+  /* Sobre */
+  .sobre {
+    width: 280px; max-width: 100%; height: 180px; position: relative; cursor: pointer;
+    background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 6px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.6), 0 0 40px rgba(79,134,255,.15);
+    transition: transform .3s;
+  }
+  .sobre:hover, .sobre:focus-visible { transform: scale(1.04) rotate(-1deg); outline: none; }
+  .sobre::before {
+    content: ""; position: absolute; inset: 0; border-radius: 6px;
+    background: linear-gradient(135deg, transparent 49.5%, #1c2335 50%) left / 50% 100% no-repeat,
+                linear-gradient(225deg, transparent 49.5%, #1c2335 50%) right / 50% 100% no-repeat;
+  }
+  .solapa {
+    position: absolute; top: 0; left: 0; right: 0; height: 100px;
+    background: #22304f; clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top; transition: transform .6s;
+  }
+  .sobre.abierto .solapa { transform: rotateX(180deg); }
+  .sello {
+    position: absolute; top: 66px; left: 50%; transform: translateX(-50%);
+    font-size: 44px; animation: latido 1.2s infinite; z-index: 2;
+  }
+  @keyframes latido { 0%,100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.18); } }
+  .destinatario {
+    position: absolute; bottom: 16px; left: 0; right: 0; z-index: 2;
+    font-family: var(--display); font-size: 1.5rem; color: var(--azul-suave);
+  }
+  .pista { margin-top: 28px; color: var(--texto-suave); font-weight: 600; animation: parpadeo 2s infinite; }
+  @keyframes parpadeo { 50% { opacity: .4; } }
+
+  /* Carta */
+  .carta {
+    background: var(--noche); max-width: 560px; width: 100%;
+    padding: 36px 28px; border-radius: 14px; text-align: left;
+    border: 1px solid var(--linea);
+    box-shadow: 0 20px 50px rgba(0,0,0,.55);
+    background-image: repeating-linear-gradient(transparent 0 31px, rgba(79,134,255,.14) 31px 32px);
+  }
+  .carta p { font-size: 1.08rem; line-height: 32px; white-space: pre-wrap; min-height: 200px; color: var(--texto); }
+  .cursor { display: inline-block; width: 2px; background: var(--azul); animation: parpadeo .8s infinite; }
+  .firma { font-size: 1.9rem; text-align: right; margin-top: 16px; color: var(--azul-suave); opacity: 0; transition: opacity 1s; }
+  .firma.ver { opacity: 1; }
+  .saltar { margin-top: 14px; background: none; border: none; color: var(--texto-suave); font: 600 .9rem var(--cuerpo); text-decoration: underline; cursor: pointer; }
+
+  .btn {
+    margin-top: 28px; border: none; cursor: pointer;
+    font: 600 1.05rem var(--cuerpo);
+    padding: 14px 30px; border-radius: 999px;
+    background: var(--azul); color: #fff;
+    box-shadow: 0 8px 24px rgba(79,134,255,.35);
+    transition: transform .2s, opacity .4s;
+  }
+  .btn:hover { transform: translateY(-2px) scale(1.04); }
+  .btn:focus-visible, .saltar:focus-visible, .planes li:focus-visible, .tarjeta:focus-visible, .musica:focus-visible { outline: 2px solid var(--azul-suave); outline-offset: 3px; }
+  .btn.oculto { opacity: 0; pointer-events: none; }
+
+  /* Razones */
+  .razones { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; max-width: 760px; width: 100%; }
+  .tarjeta { height: 170px; perspective: 800px; cursor: pointer; }
+  .tarjeta .dentro { position: relative; width: 100%; height: 100%; transition: transform .7s; transform-style: preserve-3d; }
+  .tarjeta.volteada .dentro { transform: rotateY(180deg); }
+  .cara {
+    position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; padding: 14px;
+    border: 1px solid var(--linea);
+  }
+  .frente { background: var(--tarjeta); color: var(--texto); flex-direction: column; gap: 6px; font-weight: 600; }
+  .frente b { font-size: 2rem; }
+  .atras { background: #1b2a4d; color: var(--texto); transform: rotateY(180deg); font-size: .98rem; line-height: 1.4; border-color: var(--azul); }
+  .contador { color: var(--texto-suave); font-weight: 600; margin-top: 18px; font-variant-numeric: tabular-nums; }
+
+  /* Planes */
+  .planes { list-style: none; max-width: 460px; width: 100%; display: grid; gap: 12px; }
+  .planes li {
+    background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 14px; padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px; text-align: left;
+    font-size: 1.08rem; font-weight: 600; cursor: pointer;
+    transition: transform .2s, background .3s;
+  }
+  .planes li:hover { transform: scale(1.02); }
+  .planes .caja {
+    flex: none; width: 28px; height: 28px; border-radius: 8px;
+    border: 2px solid var(--azul); display: grid; place-items: center; font-size: 15px; color: var(--azul-suave);
+  }
+  .planes li.hecho { background: #1b2a4d; }
+  .planes li.hecho .texto { text-decoration: line-through; opacity: .6; }
+  .musica-nuestra { margin-top: 26px; color: var(--texto-suave); font-weight: 600; font-size: 1.02rem; }
+
+  /* Pregunta */
+  .pregunta-caja {
+    background: var(--noche); border: 1px solid var(--linea);
+    padding: 36px 24px; border-radius: 20px; max-width: 480px; width: 100%;
+    box-shadow: 0 20px 50px rgba(0,0,0,.55);
+  }
+  .carita { font-size: 64px; margin-bottom: 8px; }
+  .pregunta-caja p { font-size: 1.2rem; font-weight: 600; }
+  .botones { display: flex; gap: 18px; justify-content: center; align-items: center; margin-top: 24px; min-height: 80px; flex-wrap: wrap; }
+  #no { background: #3a4152; box-shadow: none; position: relative; transition: left .25s, top .25s; }
+
+  /* Final */
+  .final h1 { font-size: clamp(2.4rem, 9vw, 4.4rem); }
+  .final p { color: var(--texto); font-size: 1.15rem; font-weight: 600; max-width: 520px; line-height: 1.6; }
+  .reloj { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 22px 0 10px; }
+  .reloj div {
+    background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 14px;
+    padding: 12px 8px; min-width: 76px;
+  }
+  .reloj b { display: block; font-size: 2rem; color: var(--azul-suave); font-variant-numeric: tabular-nums; }
+  .reloj small { font-weight: 600; font-size: .8rem; color: var(--texto-suave); }
+  .desde { color: var(--texto-suave) !important; font-size: 1rem !important; margin-bottom: 18px; }
+  .ramo { font-size: clamp(2.2rem, 9vw, 3.2rem); letter-spacing: 4px; margin: 18px 0 6px; }
+  .ramo span { display: inline-block; animation: florecer .9s ease both; }
+  @keyframes florecer { from { transform: scale(0) rotate(-40deg); } to { transform: none; } }
+  .estallido { position: fixed; pointer-events: none; z-index: 5; font-size: 24px; animation: volar 1.6s ease-out forwards; }
+  @keyframes volar { to { transform: translate(var(--x), var(--y)) scale(.4) rotate(var(--r)); opacity: 0; } }
+
+  .musica {
+    position: fixed; z-index: 10;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    right: calc(14px + env(safe-area-inset-right, 0px));
+    background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 50%;
+    width: 44px; height: 44px; font-size: 20px; cursor: pointer; color: var(--texto);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    .flotantes { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="flotantes" id="flotantes"></div>
+<button class="musica" id="musica" title="Música" aria-label="Encender o apagar la música">🔇</button>
+
+<!-- 1. Sobre -->
+<section class="pantalla activa" id="p1">
+  <h1>Blanca, tengo algo para ti</h1>
+  <p class="sub">Solo para ti, mi niña preciosa 🖤</p>
+  <div class="sobre" id="sobre" role="button" tabindex="0" aria-label="Abrir el sobre">
+    <div class="solapa"></div>
+    <div class="sello">💙</div>
+    <div class="destinatario">Para: Blanca</div>
+  </div>
+  <p class="pista">Toca el sobre para abrirlo</p>
+</section>
+
+<!-- 2. Carta -->
+<section class="pantalla" id="p2">
+  <div class="carta">
+    <p id="texto"></p>
+    <div class="firma" id="firma">— Tu hombre 🖤</div>
+  </div>
+  <button class="saltar" id="saltar">Mostrar toda la carta</button>
+  <button class="btn oculto" id="aRazones">Hay más… →</button>
+</section>
+
+<!-- 3. Razones -->
+<section class="pantalla" id="p3">
+  <h1>Lo que me encanta de ti</h1>
+  <p class="sub">Toca cada tarjeta 💙</p>
+  <div class="razones" id="razones"></div>
+  <p class="contador" id="contador"></p>
+  <button class="btn oculto" id="aPlanes">Sigue… →</button>
+</section>
+
+<!-- 4. Planes -->
+<section class="pantalla" id="p4">
+  <h1>Nuestros planes juntos</h1>
+  <p class="sub">Esta lista la vamos a ir tachando tú y yo</p>
+  <ul class="planes" id="planes"></ul>
+  <p class="musica-nuestra">🎧 Y de fondo, siempre: Alemán y Bizarrap</p>
+  <button class="btn" id="aPregunta">Una última cosa… →</button>
+</section>
+
+<!-- 5. Pregunta -->
+<section class="pantalla" id="p5">
+  <div class="pregunta-caja">
+    <div class="carita">🥺</div>
+    <h2>Blanca, ya eres mi novia, pero te lo quiero preguntar otra vez…</h2>
+    <p>¿Quieres seguir siendo mi novia, hoy y siempre?</p>
+    <div class="botones">
+      <button class="btn" id="si">Sí 💙</button>
+      <button class="btn" id="no">No</button>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Final -->
+<section class="pantalla final" id="p6">
+  <h1>¡Sabía que dirías que sí! 🖤</h1>
+  <p>Llevamos juntos:</p>
+  <div class="reloj">
+    <div><b id="dias">0</b><small>días</small></div>
+    <div><b id="horas">0</b><small>horas</small></div>
+    <div><b id="minutos">0</b><small>minutos</small></div>
+    <div><b id="segundos">0</b><small>segundos</small></div>
+  </div>
+  <p class="desde">Desde el 19 de octubre de 2026, a las 12 de la noche, en el carro 🚗</p>
+  <div class="ramo" id="ramo"></div>
+  <p>Unas peonías y hortensias para ti, mientras te llevo unas de verdad.<br>Esto apenas empieza. Te amo, mi niña preciosa.</p>
+  <button class="btn" id="otraVez">Ver de nuevo ↺</button>
+</section>
+
+<script>
+  // ✏️ Personaliza aquí
+  const INICIO = new Date(2026, 9, 19, 0, 0, 0); // 19 oct 2026, 12:00 de la noche
+
+  const CARTA = `Blanca, mi niña preciosa:
+
+Sé que ya eres mi novia, pero me quedé con el pendiente de hacerte algo, algo hecho solo para ti.
+
+Fue algo raro cómo empezamos, pero no me arrepiento ni tantito de haberte mandado ese mensaje. Te vi y pensé: "wow, qué hermosa". Y lo que más me gustó fue que estabas natural.
+
+Me abriste las puertas y me mostraste quién eres: sin mentiras, sin máscaras, sencillamente tú. Esa naturalidad tuya me súper encantó.
+
+Todavía me río de la noche de películas con Gregory. Yo iba a quedarme una hora máximo… y terminé desvelado platicando contigo. Ahí supe que contigo el tiempo se me pasa volando.
+
+Esto apenas empieza, mi amor, y quiero vivirlo todo contigo.
+
+Te amo.`;
+
+  const RAZONES = [
+    "Cómo te expresas, me encanta escucharte 🗣️",
+    "Tu madurez, me da paz y me inspira",
+    "Cómo te vistes, siempre te ves bonita 🖤",
+    "Tu sonrisa, me alegra el día 😊",
+    "Tus ojitos ✨",
+    "Lo bien que te quedan tus lentes 🤓",
+    "Tu naturalidad: eres tú, sin máscaras 💙",
+    "Que contigo \"una horita\" nunca es una horita 😂",
+  ];
+
+  const PLANES = [
+    "🍽️ Ir a cenar a un restaurante",
+    "🏖️ Ir a la playa",
+    "⛪ Conocer Puebla",
+    "✨ Hacer muchas cosas juntos",
+  ];
+
+  const $ = id => document.getElementById(id);
+  const ir = n => {
+    document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    $('p' + n).classList.add('activa');
+    window.scrollTo(0, 0);
+  };
+
+  // Flores y corazones flotando de fondo (peonías 🌸 y hortensias 🪻)
+  const flotantes = ['🖤', '💙', '🌸', '🪻', '🖤', '💐'];
+  function flotar() {
+    const s = document.createElement('span');
+    s.textContent = flotantes[Math.floor(Math.random() * flotantes.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = 14 + Math.random() * 22 + 'px';
+    s.style.animationDuration = 6 + Math.random() * 6 + 's';
+    $('flotantes').appendChild(s);
+    setTimeout(() => s.remove(), 12000);
+  }
+  setInterval(flotar, 500);
+
+  // Música suave generada (sin archivos externos)
+  let audio = null, sonando = false, temporizador = null;
+  const notas = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880, 698.46, 523.25, 659.25, 783.99, 1046.5];
+  function tocar() {
+    let i = 0;
+    temporizador = setInterval(() => {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = 'sine';
+      o.frequency.value = notas[i++ % notas.length];
+      g.gain.setValueAtTime(0.0001, audio.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.08, audio.currentTime + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.9);
+      o.connect(g).connect(audio.destination);
+      o.start(); o.stop(audio.currentTime + 1);
+    }, 420);
+  }
+  function alternarMusica(forzar) {
+    try {
+      if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+      audio.resume();
+    } catch { return; }
+    sonando = forzar ?? !sonando;
+    clearInterval(temporizador);
+    if (sonando) tocar();
+    $('musica').textContent = sonando ? '🎵' : '🔇';
+  }
+  $('musica').onclick = () => alternarMusica();
+
+  // 1 → 2: abrir sobre
+  function abrirSobre() {
+    $('sobre').classList.add('abierto');
+    if (!sonando) alternarMusica(true);
+    setTimeout(() => { ir(2); escribir(); }, 700);
+  }
+  $('sobre').onclick = abrirSobre;
+  $('sobre').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirSobre(); } };
+
+  // Efecto máquina de escribir
+  let escribiendo = null;
+  function terminarCarta() {
+    clearTimeout(escribiendo);
+    $('texto').textContent = CARTA;
+    $('firma').classList.add('ver');
+    $('saltar').hidden = true;
+    $('aRazones').classList.remove('oculto');
+  }
+  function escribir() {
+    const p = $('texto');
+    let i = 0;
+    p.textContent = '';
+    $('saltar').hidden = false;
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor'; cursor.innerHTML = '&nbsp;';
+    const nodo = document.createTextNode('');
+    p.append(nodo, cursor);
+    (function paso() {
+      if (i < CARTA.length) {
+        nodo.textContent += CARTA[i];
+        const pausa = /[.,:\n]/.test(CARTA[i++]) ? 220 : 38;
+        escribiendo = setTimeout(paso, pausa);
+      } else {
+        terminarCarta();
+      }
+    })();
+  }
+  $('saltar').onclick = terminarCarta;
+  $('aRazones').onclick = () => { ir(3); armarRazones(); };
+
+  // Tarjetas de razones
+  function armarRazones() {
+    const cont = $('razones');
+    cont.innerHTML = '';
+    let vistas = 0;
+    const actualizar = () => {
+      $('contador').textContent = `${vistas} de ${RAZONES.length}`;
+      if (vistas === RAZONES.length) $('aPlanes').classList.remove('oculto');
+    };
+    RAZONES.forEach((r, n) => {
+      const t = document.createElement('div');
+      t.className = 'tarjeta';
+      t.tabIndex = 0;
+      t.setAttribute('role', 'button');
+      t.innerHTML = `<div class="dentro">
+          <div class="cara frente"><b>${n % 2 ? '💙' : '🖤'}</b>Razón #${n + 1}</div>
+          <div class="cara atras">${r}</div>
+        </div>`;
+      const voltear = () => {
+        if (!t.classList.contains('volteada')) { vistas++; actualizar(); }
+        t.classList.add('volteada');
+      };
+      t.onclick = voltear;
+      t.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); voltear(); } };
+      cont.appendChild(t);
+    });
+    actualizar();
+  }
+  $('aPlanes').onclick = () => { ir(4); armarPlanes(); };
+
+  // Lista de planes (se recuerda lo que ya tacharon en este dispositivo)
+  function leerHechos() {
+    try { return JSON.parse(localStorage.getItem('planesBlanca')) || []; } catch { return []; }
+  }
+  function guardarHechos(h) {
+    try { localStorage.setItem('planesBlanca', JSON.stringify(h)); } catch {}
+  }
+  function armarPlanes() {
+    const ul = $('planes');
+    ul.innerHTML = '';
+    const hechos = leerHechos();
+    PLANES.forEach((plan, n) => {
+      const li = document.createElement('li');
+      li.tabIndex = 0;
+      li.setAttribute('role', 'checkbox');
+      li.innerHTML = `<span class="caja"></span><span class="texto">${plan}</span>`;
+      const marcar = () => {
+        const h = hechos.includes(n);
+        li.classList.toggle('hecho', h);
+        li.setAttribute('aria-checked', h);
+        li.querySelector('.caja').textContent = h ? '✔' : '';
+      };
+      const alternar = () => {
+        const k = hechos.indexOf(n);
+        if (k >= 0) hechos.splice(k, 1); else hechos.push(n);
+        guardarHechos(hechos);
+        marcar();
+      };
+      li.onclick = alternar;
+      li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternar(); } };
+      ul.appendChild(li);
+      marcar();
+    });
+  }
+  $('aPregunta').onclick = () => ir(5);
+
+  // El botón "No" se escapa 😏
+  const frasesNo = ['¿Segura? 🥺', 'Piénsalo bien…', '¡No me alcanzas! 😜', 'Ese botón no funciona', 'Intenta con el otro 💙'];
+  let intentos = 0;
+  function huir() {
+    const no = $('no');
+    const ancho = Math.min(240, innerWidth - 160);
+    no.style.left = (Math.random() * ancho - ancho / 2) + 'px';
+    no.style.top = (Math.random() * 160 - 80) + 'px';
+    no.textContent = frasesNo[intentos++ % frasesNo.length];
+    $('si').style.transform = `scale(${Math.min(1 + intentos * 0.12, 1.8)})`;
+  }
+  $('no').addEventListener('mouseenter', huir);
+  $('no').addEventListener('click', e => { e.preventDefault(); huir(); });
+
+  // Sí → celebración, ramo y contador
+  $('si').onclick = () => {
+    ir(6);
+    const ramo = $('ramo');
+    ramo.innerHTML = '';
+    ['🌸', '🪻', '💐', '🪻', '🌸'].forEach((f, k) => {
+      const s = document.createElement('span');
+      s.textContent = f;
+      s.style.animationDelay = (0.3 + k * 0.2) + 's';
+      ramo.appendChild(s);
+    });
+    for (let k = 0; k < 4; k++) setTimeout(explosion, k * 350);
+  };
+  function explosion() {
+    const cx = innerWidth / 2, cy = innerHeight / 2;
+    for (let i = 0; i < 40; i++) {
+      const s = document.createElement('span');
+      s.className = 'estallido';
+      s.textContent = flotantes[i % flotantes.length];
+      const ang = Math.random() * Math.PI * 2, dist = 150 + Math.random() * 300;
+      s.style.left = cx + 'px'; s.style.top = cy + 'px';
+      s.style.setProperty('--x', Math.cos(ang) * dist + 'px');
+      s.style.setProperty('--y', Math.sin(ang) * dist + 'px');
+      s.style.setProperty('--r', (Math.random() * 360) + 'deg');
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 1700);
+    }
+  }
+
+  function actualizarReloj() {
+    const seg = Math.max(0, Math.floor((Date.now() - INICIO) / 1000));
+    $('dias').textContent = Math.floor(seg / 86400);
+    $('horas').textContent = Math.floor(seg % 86400 / 3600);
+    $('minutos').textContent = Math.floor(seg % 3600 / 60);
+    $('segundos').textContent = seg % 60;
+  }
+  actualizarReloj();
+  setInterval(actualizarReloj, 1000);
+
+  $('otraVez').onclick = () => {
+    $('sobre').classList.remove('abierto');
+    $('firma').classList.remove('ver');
+    $('aRazones').classList.add('oculto');
+    $('aPlanes').classList.add('oculto');
+    $('no').style.left = $('no').style.top = '0';
+    $('no').textContent = 'No';
+    $('si').style.transform = '';
+    intentos = 0;
+    ir(1);
+  };
+</script>
+</body>
+</html>
