@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ábrela cuando…</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;600&display=swap">
+<link rel="stylesheet" href="comun.css">
+<style>
+  .sobres { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+  .sobre {
+    position: relative; aspect-ratio: 3 / 2; border: 1px solid var(--linea); border-radius: 10px; cursor: pointer;
+    background: var(--tarjeta); color: var(--texto); font: 600 .98rem var(--cuerpo);
+    display: flex; align-items: flex-end; justify-content: center; padding: 0 10px 14px; text-align: center; line-height: 1.3;
+    overflow: hidden; transition: transform .25s, border-color .25s;
+    animation: aparecer .5s ease both;
+  }
+  .sobre::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 58%;
+    background: #22304f; clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+  .sobre .sello { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); font-size: 1.7rem; }
+  .sobre:hover { transform: translateY(-4px) rotate(-1deg); border-color: var(--azul); }
+  .sobre.leida::before { background: #1a2238; }
+  .sobre.leida .sello { opacity: .5; }
+  .fondo {
+    position: fixed; inset: 0; z-index: 20; background: rgba(3,5,10,.85);
+    display: grid; place-items: center; padding: 16px; overflow-y: auto;
+  }
+  .carta {
+    max-width: 520px; width: 100%; text-align: left; animation: aparecer .4s ease both;
+    background: var(--noche);
+    background-image: repeating-linear-gradient(transparent 0 31px, rgba(79,134,255,.14) 31px 32px);
+  }
+  .carta small { color: var(--azul-suave); letter-spacing: .14em; text-transform: uppercase; font-weight: 600; font-size: .78rem; }
+  .carta p { font-size: 1.08rem; line-height: 32px; white-space: pre-line; margin-top: 10px; }
+  .carta .firma { font-family: var(--display); font-size: 1.7rem; color: var(--azul-suave); text-align: right; margin-top: 10px; }
+  .carta .btn { margin-top: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ábrela cuando…</h1>
+  <p class="sub">Cartas para cada momento. Ábrelas solo cuando de verdad toque, ¿va? 💌</p>
+  <div class="sobres" id="sobres"></div>
+  <a class="volver" href="sorpresas.html">← Más sorpresas</a>
+</main>
+
+<div class="fondo" id="fondo" hidden>
+  <div class="panel carta" role="dialog" aria-modal="true" aria-labelledby="cTitulo">
+    <small id="cTitulo"></small>
+    <p id="cTexto"></p>
+    <div class="firma">— Tu hombre 🖤</div>
+    <button class="btn gris" id="cerrar">Guardar la carta</button>
+  </div>
+</div>
+
+<script>
+  // ✏️ Personaliza aquí
+  const CARTAS = [
+    ['😢', 'estés triste',
+`Mi niña preciosa:
+
+Si estás leyendo esto es porque hoy no es un buen día, y quiero que sepas que no estás sola. Aunque no esté a tu lado en este momento, estoy contigo.
+
+Está bien llorar, está bien no tener ganas. Pero acuérdate de algo: eres fuerte, eres madura, y eres de las personas más bonitas que conozco, por dentro y por fuera.
+
+Esto también va a pasar. Y cuando pase, aquí voy a estar para abrazarte. Mándame un mensaje, aunque sea un "hola". Yo me encargo del resto.`],
+    ['🥺', 'me extrañes',
+`Mi amor:
+
+Yo también te extraño. Seguro más.
+
+Cierra los ojos y acuérdate de la noche en el carro, o de esa desvelada que según iba a ser "una horita". Así de cerca estoy, aunque no lo parezca.
+
+Ahora mismo deja de leer y escríbeme. Te apuesto a que yo también estaba pensando en ti.`],
+    ['🌙', 'no puedas dormir',
+`Hola, desvelada:
+
+Ya sé que contigo las horas se pasan volando, pero ahora toca descansar.
+
+Respira hondo. Piensa en la playa a la que vamos a ir, en Puebla, en la cena que te debo. Imagina que pongo algo tranquilito de fondo y que estoy ahí contigo.
+
+Si de plano no puedes, escríbeme. Ya sabes que por ti me desvelo con gusto. Pero intenta dormir, mi niña preciosa. Mañana te quiero ver sonreír.`],
+    ['😤', 'estemos enojados',
+`Blanca:
+
+Si abriste esta carta es porque estamos enojados. Y aun así, te amo. Eso no cambia por una discusión.
+
+Me gustó de ti que eres natural, que no finges y que dices lo que sientes. Así quiero que lo arreglemos: hablando claro, sin máscaras.
+
+Dame unos minutos y yo te los doy a ti. Luego nos sentamos a platicar. Prefiero mil veces tener la razón a medias y tenerte a ti completa.`],
+    ['😂', 'necesites reírte',
+`Plan de emergencia para reírte:
+
+1. Acuérdate de que yo dije "nada más una horita" y terminé desvelado.
+2. Imagina la cara de Gregory si supiera todo lo que empezó esa noche.
+3. Ponte tus lentes, mírate al espejo y repite: "Qué guapa estoy". Porque es cierto.
+4. Si nada de esto funciona, mándame un audio y te cuento un chiste malo. Prometido.`],
+    ['💙', 'dudes de lo que siento',
+`Mi amor:
+
+Por si algún día lo dudas, aquí va por escrito, para que no se borre:
+
+Me encantas. Me encanta cómo te expresas, tu sonrisa, tus ojitos, tu madurez y lo bonita que te ves siempre. Pero lo que más me enamoró fue que fuiste tú misma desde el principio.
+
+No me arrepiento ni tantito de haberte mandado ese mensaje. Te elegí ese día, te elegí en el carro, y te sigo eligiendo todos los días.`],
+    ['🏆', 'logres algo importante',
+`¡Felicidades, mi niña preciosa!
+
+Sabía que lo ibas a lograr. Siempre lo supe.
+
+Hoy toca celebrarte: tú eliges el lugar y yo invito. Estoy muy orgulloso de ti, y quiero estar en todos tus logros, aplaudiéndote en primera fila.`],
+    ['🎂', 'cumplamos un mes',
+`¡Un mes, mi amor!
+
+Un mes entero que se me hizo como una horita… de esas que tú y yo ya sabemos que nunca son una horita.
+
+Gracias por este primer mes. Por tu paciencia, por tu risa, por dejarme conocerte de verdad. Esto apenas empieza y ya es lo mejor que me ha pasado.
+
+Hoy revisa tu ramo: ya debe estar enorme 💐`],
+  ];
+
+  const $ = id => document.getElementById(id);
+  const CLAVE = 'cartasLeidasBlanca';
+  const leer = () => { try { return JSON.parse(localStorage.getItem(CLAVE)) || []; } catch { return []; } };
+  const leidas = leer();
+
+  function pintar() {
+    $('sobres').innerHTML = CARTAS.map(([ico, cuando], i) =>
+      `<button class="sobre${leidas.includes(i) ? ' leida' : ''}" data-i="${i}" style="animation-delay:${i * 60}ms">
+        <span class="sello">${ico}</span>Ábrela cuando ${cuando}</button>`).join('');
+  }
+  $('sobres').addEventListener('click', e => {
+    const s = e.target.closest('.sobre');
+    if (!s) return;
+    const i = +s.dataset.i;
+    $('cTitulo').textContent = `Ábrela cuando ${CARTAS[i][1]}`;
+    $('cTexto').textContent = CARTAS[i][2];
+    $('fondo').hidden = false;
+    $('fondo').scrollTop = 0;
+    $('cerrar').focus();
+    if (!leidas.includes(i)) {
+      leidas.push(i);
+      try { localStorage.setItem(CLAVE, JSON.stringify(leidas)); } catch {}
+    }
+  });
+  const cerrar = () => { $('fondo').hidden = true; pintar(); };
+  $('cerrar').onclick = cerrar;
+  $('fondo').addEventListener('click', e => { if (e.target === $('fondo')) cerrar(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('fondo').hidden) cerrar(); });
+  pintar();
+</script>
+</body>
+</html>

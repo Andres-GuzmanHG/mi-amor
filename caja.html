@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La caja fuerte</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;600&display=swap">
+<link rel="stylesheet" href="comun.css">
+<style>
+  .caja {
+    width: 100%; max-width: 340px; background: linear-gradient(160deg, #1d2333, #0d1018);
+    border: 2px solid #2d3650; border-radius: 22px; padding: 22px;
+    box-shadow: inset 0 0 0 6px #121622, 0 24px 50px rgba(0,0,0,.6);
+    perspective: 900px;
+  }
+  .pantallita {
+    background: #050a14; border: 1px solid var(--linea); border-radius: 10px;
+    font: 700 2rem 'Courier New', monospace; letter-spacing: .4em; color: var(--azul-suave);
+    padding: 12px 0 12px .4em; margin-bottom: 16px; text-shadow: 0 0 10px rgba(79,134,255,.8);
+    font-variant-numeric: tabular-nums;
+  }
+  .pantallita.mal { color: #ff7a8a; animation: temblar .4s; }
+  .pantallita.bien { color: #7dffb2; }
+  @keyframes temblar { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  .teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .teclado button {
+    font: 700 1.4rem var(--cuerpo); color: var(--texto); background: var(--tarjeta);
+    border: 1px solid var(--linea); border-radius: 14px; padding: 14px 0; cursor: pointer;
+    box-shadow: 0 4px 0 #0a0d14;
+  }
+  .teclado button:active { transform: translateY(3px); box-shadow: none; }
+  .pista { color: var(--texto-suave); font-size: .95rem; line-height: 1.5; max-width: 36ch; }
+  .pregunta input {
+    width: 100%; margin: 14px 0; padding: 14px 16px; border-radius: 12px;
+    border: 1px solid var(--linea); background: #0b0f19; color: var(--texto);
+    font: 600 1.1rem var(--cuerpo); text-align: center;
+  }
+  .error { color: #ff9aa8; font-weight: 600; min-height: 1.4em; }
+  .puerta { transform-origin: left center; transition: transform 1.2s cubic-bezier(.6,.1,.3,1); }
+  .puerta.abierta { transform: rotateY(-100deg); }
+  .tesoro { animation: aparecer .9s ease both; display: flex; flex-direction: column; gap: 16px; width: 100%; }
+  .carta-secreta { text-align: left; line-height: 1.7; font-size: 1.08rem; white-space: pre-line; }
+  .firma { font-family: var(--display); font-size: 1.7rem; color: var(--azul-suave); text-align: right; }
+  .boleto {
+    background: linear-gradient(135deg, var(--azul-hondo), #2a1f3a);
+    border: 2px dashed var(--azul-suave); border-radius: 18px; padding: 22px;
+  }
+  .boleto small { letter-spacing: .15em; text-transform: uppercase; color: var(--peonia); font-weight: 600; }
+  .boleto .letra { font-size: 2.2rem; margin: 6px 0; }
+  .boleto p { color: var(--texto-suave); line-height: 1.5; }
+</style>
+</head>
+<body>
+<main>
+  <h1>La caja fuerte</h1>
+
+  <!-- Paso 1: código -->
+  <section id="paso1" style="display:contents">
+    <p class="sub">Aquí guardé algo para ti. Para abrirla necesitas dos llaves, y solo tú las tienes 🔐</p>
+    <div class="caja puerta" id="puerta">
+      <div class="pantallita" id="pantallita">____</div>
+      <div class="teclado" id="teclado"></div>
+    </div>
+    <p class="pista"><b>Llave 1:</b> el día y el mes en que te pedí ser mi novia en el carro (4 números).</p>
+  </section>
+
+  <!-- Paso 2: pregunta -->
+  <section id="paso2" class="panel pregunta" hidden>
+    <h2>Llave 2</h2>
+    <p class="pista" style="margin:8px auto 0">¿Con quién vimos películas la noche que me iba a quedar "una horita" y terminé desvelado?</p>
+    <input id="respuesta" type="text" autocomplete="off" placeholder="Escribe su nombre">
+    <p class="error" id="error"></p>
+    <button class="btn" id="probar">Abrir la caja</button>
+  </section>
+
+  <!-- Tesoro -->
+  <section id="tesoro" class="tesoro" hidden>
+    <div class="panel">
+      <p class="carta-secreta">Lo lograste, mi niña preciosa 🖤
+
+Si llegaste hasta aquí es porque te sabes nuestra historia de memoria, igual que yo.
+
+Esa noche con Gregory dije "nada más una horita", y desde entonces cada hora contigo se me pasa en un segundo. Por eso guardé aquí algo que quiero cumplir contigo, en persona.</p>
+      <p class="firma">— Tu hombre</p>
+    </div>
+    <div class="boleto">
+      <small>Invitación oficial</small>
+      <div class="letra">Una cena, tú y yo</div>
+      <p>En el restaurante que tú elijas, el día que tú digas.<br>Yo invito, tú solo ponte bonita (aunque ya lo eres). 🍽️💙</p>
+    </div>
+    <p class="pista" style="margin:0 auto">Mándame captura de esta invitación para apartar la fecha 😉</p>
+  </section>
+
+  <a class="volver" href="sorpresas.html">← Más sorpresas</a>
+</main>
+
+<script>
+  // ✏️ Personaliza aquí
+  const CODIGO = '1910';                   // 19 de octubre
+  const RESPUESTAS = ['gregory', 'greg', 'gregori'];
+
+  const $ = id => document.getElementById(id);
+  let tecleado = '';
+
+  const teclas = ['1','2','3','4','5','6','7','8','9','⌫','0','✓'];
+  $('teclado').innerHTML = teclas.map(t => `<button type="button" data-t="${t}" aria-label="${t === '⌫' ? 'Borrar' : t === '✓' ? 'Aceptar' : t}">${t}</button>`).join('');
+  $('teclado').addEventListener('click', e => {
+    const t = e.target.closest('button')?.dataset.t;
+    if (t) pulsar(t);
+  });
+  document.addEventListener('keydown', e => {
+    if ($('paso1').hidden) return;
+    if (/^\d$/.test(e.key)) pulsar(e.key);
+    else if (e.key === 'Backspace') pulsar('⌫');
+    else if (e.key === 'Enter') pulsar('✓');
+  });
+
+  function pintar() {
+    $('pantallita').textContent = (tecleado + '____').slice(0, 4);
+  }
+  function pulsar(t) {
+    const p = $('pantallita');
+    p.classList.remove('mal');
+    if (t === '⌫') tecleado = tecleado.slice(0, -1);
+    else if (t === '✓') return revisar();
+    else if (tecleado.length < 4) tecleado += t;
+    pintar();
+    if (tecleado.length === 4) revisar();
+  }
+  function revisar() {
+    const p = $('pantallita');
+    if (tecleado === CODIGO) {
+      p.classList.add('bien');
+      p.textContent = 'OK ✓';
+      setTimeout(() => {
+        $('paso1').hidden = true;
+        $('paso2').hidden = false;
+        $('respuesta').focus();
+      }, 900);
+    } else {
+      void p.offsetWidth;
+      p.classList.add('mal');
+      p.textContent = 'NO';
+      tecleado = '';
+      setTimeout(pintar, 800);
+    }
+  }
+
+  const normal = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
+  function probar() {
+    const r = normal($('respuesta').value);
+    if (RESPUESTAS.some(x => r.includes(x))) {
+      $('paso2').hidden = true;
+      $('tesoro').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      $('error').textContent = r ? 'Mmm, no… piensa en esa noche de películas 🎬' : 'Escribe un nombre 😉';
+    }
+  }
+  $('probar').onclick = probar;
+  $('respuesta').addEventListener('keydown', e => { if (e.key === 'Enter') probar(); });
+</script>
+</body>
+</html>

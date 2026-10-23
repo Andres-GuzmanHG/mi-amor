@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nuestro Wrapped</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="comun.css">
+<style>
+  main { padding-block: 16px 32px; gap: 12px; }
+  .historia {
+    position: relative; width: 100%; max-width: 420px; aspect-ratio: 9 / 16; max-height: 82vh;
+    border-radius: 22px; overflow: hidden; border: 1px solid var(--linea);
+    user-select: none; cursor: pointer;
+  }
+  .barras { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 4px; z-index: 3; }
+  .barras i { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,.25); overflow: hidden; }
+  .barras i b { display: block; height: 100%; width: 0; background: #fff; }
+  .lamina {
+    position: absolute; inset: 0; padding: 56px 26px 30px;
+    display: flex; flex-direction: column; justify-content: center; gap: 14px; text-align: left;
+  }
+  .lamina > * { animation: aparecer .6s ease both; }
+  .lamina > *:nth-child(2) { animation-delay: .15s; }
+  .lamina > *:nth-child(3) { animation-delay: .3s; }
+  .lamina > *:nth-child(4) { animation-delay: .45s; }
+  .lamina > *:nth-child(5) { animation-delay: .6s; }
+  .eti { letter-spacing: .2em; text-transform: uppercase; font-weight: 700; font-size: .8rem; color: var(--azul-suave); }
+  .grande { font: 700 clamp(3.4rem, 18vw, 5.4rem)/1 var(--cuerpo); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .media { font: 700 clamp(1.9rem, 9vw, 2.6rem)/1.15 var(--cuerpo); letter-spacing: -.01em; }
+  .lamina p { font-size: 1.1rem; line-height: 1.5; color: var(--texto); }
+  .lamina .suave { color: var(--texto-suave); }
+  .top { list-style: none; display: grid; gap: 10px; counter-reset: n; }
+  .top li { counter-increment: n; display: flex; gap: 14px; align-items: baseline; font: 700 1.3rem var(--cuerpo); }
+  .top li::before { content: counter(n); color: var(--azul-suave); font-size: 1.6rem; width: 1.2em; }
+  .letra-g { font-family: var(--display); font-size: clamp(3rem, 14vw, 4.4rem); line-height: 1.05; color: #fff; }
+  .lamina .btn { align-self: flex-start; }
+  .ayuda { color: var(--texto-suave); font-size: .88rem; }
+</style>
+</head>
+<body>
+<main>
+  <div class="historia" id="historia" aria-live="polite">
+    <div class="barras" id="barras"></div>
+    <div id="lamina"></div>
+  </div>
+  <p class="ayuda">Toca a la derecha para avanzar y a la izquierda para regresar</p>
+  <a class="volver" href="sorpresas.html">← Más sorpresas</a>
+</main>
+
+<script>
+  // ✏️ Personaliza aquí
+  const INICIO = new Date(2026, 9, 19);
+  const ahora = new Date();
+  const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  const DIAS = Math.max(1, Math.round((hoy - INICIO) / 864e5) + 1);
+  const HORAS = Math.max(0, Math.floor((ahora - INICIO) / 36e5));
+  const fmt = n => n.toLocaleString('es-MX');
+
+  const FONDOS = [
+    'radial-gradient(circle at 30% 20%, #1e3a8a, #07080c 70%)',
+    'linear-gradient(160deg, #0b1020, #1b2a4d)',
+    'radial-gradient(circle at 80% 80%, #3b1d34, #07080c 70%)',
+    'linear-gradient(200deg, #07080c, #142450)',
+    'radial-gradient(circle at 20% 90%, #2a3f86, #07080c 65%)',
+    'linear-gradient(160deg, #000, #0d1426)',
+    'radial-gradient(circle at 50% 30%, #4a2440, #0b0d16 70%)',
+    'linear-gradient(170deg, #10131c, #23407e)',
+    'radial-gradient(circle at 70% 20%, #1b2a4d, #07080c 70%)',
+    'radial-gradient(circle at 50% 50%, #2a4cb0, #07080c 75%)',
+  ];
+
+  const LAMINAS = [
+    `<div class="eti">Nuestro Wrapped 2026</div>
+     <div class="letra-g">Blanca &amp; tu hombre</div>
+     <p class="suave">El resumen de lo nuestro, hasta hoy. Toca para empezar 🎧</p>`,
+    `<div class="eti">Llevamos juntos</div>
+     <div class="grande">${fmt(DIAS)}</div>
+     <div class="media">${DIAS === 1 ? 'día' : 'días'}</div>
+     <p class="suave">O lo que es lo mismo: ${fmt(HORAS)} horas. Y contando.</p>`,
+    `<div class="eti">El momento del año</div>
+     <div class="media">19 de octubre,<br>12 de la noche,<br>en el carro 🚗</div>
+     <p>Te pedí ser mi novia y dijiste que sí. Reproducido en mi mente: incontables veces.</p>`,
+    `<div class="eti">Película más vista</div>
+     <div class="media">La noche de películas con Gregory 🎬</div>
+     <p>Horas planeadas: <b>1</b><br>Horas reales: <b>muchas más</b></p>
+     <p class="suave">Lo mejor no fue la película, fue la plática.</p>`,
+    `<div class="eti">Tus artistas del año</div>
+     <ol class="top"><li>Alemán</li><li>Bizarrap</li></ol>
+     <p class="suave">Los que suenan cuando estamos juntos 🎧</p>`,
+    `<div class="eti">Tu color</div>
+     <div class="grande" style="color:#000;-webkit-text-stroke:2px #9dbaff">Negro</div>
+     <p>Con un poquito de <b style="color:#6f9bff">azul</b>. Por eso todo esto está pintado así 🖤💙</p>`,
+    `<div class="eti">Tus flores favoritas</div>
+     <div class="media">Peonías 🌸<br>y hortensias 🪻</div>
+     <p>Flores en tu ramo hasta hoy: <b>${fmt(DIAS)}</b></p>
+     <p class="suave">Mañana nace otra.</p>`,
+    `<div class="eti">Lo que más me gusta de ti</div>
+     <ol class="top"><li>Tu naturalidad</li><li>Tu sonrisa</li><li>Tus ojitos (y tus lentes)</li><li>Cómo te expresas</li><li>Tu madurez</li></ol>`,
+    `<div class="eti">Destinos pendientes</div>
+     <ol class="top"><li>🍽️ Cena en restaurante</li><li>🏖️ La playa</li><li>⛪ Puebla</li></ol>
+     <p class="suave">Para el Wrapped del próximo año, ya los vamos a tener tachados.</p>`,
+    `<div class="eti">Tu persona #1 del año</div>
+     <div class="letra-g">Blanca</div>
+     <p>Gracias por estar en todos mis días. Te amo, mi niña preciosa.</p>
+     <button class="btn" id="otraVez">Ver otra vez ↺</button>`,
+  ];
+
+  const DURACION = 6000;
+  const $ = id => document.getElementById(id);
+  $('barras').innerHTML = LAMINAS.map(() => '<i><b></b></i>').join('');
+  const barras = [...$('barras').querySelectorAll('b')];
+  let i = 0, inicio = 0, pausa = false;
+
+  function ir(n) {
+    i = Math.max(0, Math.min(LAMINAS.length - 1, n));
+    $('historia').style.background = FONDOS[i % FONDOS.length];
+    $('lamina').innerHTML = `<div class="lamina">${LAMINAS[i]}</div>`;
+    barras.forEach((b, k) => b.style.width = k < i ? '100%' : '0');
+    inicio = performance.now();
+    const otra = $('otraVez');
+    if (otra) otra.onclick = e => { e.stopPropagation(); ir(0); };
+  }
+  function cuadro(t) {
+    if (!pausa) {
+      const p = Math.min(1, (t - inicio) / DURACION);
+      barras[i].style.width = p * 100 + '%';
+      if (p >= 1 && i < LAMINAS.length - 1) ir(i + 1);
+    } else {
+      inicio += t - (cuadro.prev || t);
+    }
+    cuadro.prev = t;
+    requestAnimationFrame(cuadro);
+  }
+  $('historia').addEventListener('click', e => {
+    const r = $('historia').getBoundingClientRect();
+    ir(e.clientX - r.left < r.width / 3 ? i - 1 : i + 1);
+  });
+  $('historia').addEventListener('pointerdown', () => pausa = true);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => $('historia').addEventListener(ev, () => pausa = false));
+  addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') ir(i + 1);
+    if (e.key === 'ArrowLeft') ir(i - 1);
+  });
+  ir(0);
+  requestAnimationFrame(cuadro);
+</script>
+</body>
+</html>

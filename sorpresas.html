@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sorpresas para Blanca</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;600&display=swap">
+<link rel="stylesheet" href="comun.css">
+<style>
+  .lista { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .lista a {
+    display: flex; gap: 14px; align-items: center; text-align: left; text-decoration: none; color: var(--texto);
+    background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 16px; padding: 16px;
+    transition: transform .2s, border-color .2s;
+    animation: aparecer .6s ease both;
+  }
+  .lista a:hover { transform: translateY(-3px); border-color: var(--azul); }
+  .lista .ico { font-size: 2rem; flex: none; width: 48px; height: 48px; display: grid; place-items: center; background: var(--azul-hondo); border-radius: 12px; }
+  .lista b { display: block; font-size: 1.05rem; }
+  .lista small { color: var(--texto-suave); font-size: .88rem; line-height: 1.35; display: block; margin-top: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tus sorpresas, Blanca</h1>
+  <p class="sub">Todo esto lo hice pensando en ti. Ábrelas cuando quieras, y vuelve seguido 🖤</p>
+  <nav class="lista" id="lista"></nav>
+  <a class="volver" href="./">← Volver a tu carta</a>
+</main>
+<script>
+  const SORPRESAS = [
+    ['💐', 'ramo.html', 'Tu ramo', 'Cada día que pasamos juntos nace una flor nueva'],
+    ['🔐', 'caja.html', 'La caja fuerte', 'Solo tú sabes cómo abrirla'],
+    ['🎟️', 'vales.html', 'Tus vales', 'Canjéalos cuando quieras y yo te cumplo'],
+    ['🌌', 'cielo.html', 'Nuestro cielo', 'Así estaban las estrellas cuando te lo pedí'],
+    ['🎮', 'juego.html', 'Atrapa las flores', 'Un jueguito hecho solo para ti'],
+    ['🎧', 'wrapped.html', 'Nuestro Wrapped', 'El resumen de lo nuestro'],
+    ['💌', 'abrir-cuando.html', 'Ábrela cuando…', 'Cartas para cada momento'],
+  ];
+  document.getElementById('lista').innerHTML = SORPRESAS.map(([ico, url, t, d], i) =>
+    `<a href="${url}" style="animation-delay:${i * 70}ms"><span class="ico">${ico}</span><span><b>${t}</b><small>${d}</small></span></a>`).join('');
+</script>
+</body>
+</html>
