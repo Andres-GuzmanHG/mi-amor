@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El ramo de Blanca</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;600&display=swap">
+<style>
+  /* Misma estética que la carta: negro, azul, peonías y hortensias */
+  :root {
+    --negro: #07080c;
+    --noche: #10131c;
+    --tarjeta: #161b28;
+    --linea: #263048;
+    --azul: #4f86ff;
+    --azul-suave: #9dbaff;
+    --peonia: #f2a7c3;
+    --texto: #e9edf7;
+    --texto-suave: #a7b0c6;
+    --display: 'Dancing Script', 'Brush Script MT', cursive;
+    --cuerpo: 'Quicksand', 'Segoe UI', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--cuerpo);
+    background: var(--negro);
+    background-image:
+      radial-gradient(ellipse at 50% 30%, rgba(79,134,255,.16), transparent 60%),
+      radial-gradient(ellipse at 50% 100%, rgba(242,167,195,.07), transparent 50%);
+    background-attachment: fixed;
+    color: var(--texto);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  main {
+    max-width: 560px; margin: 0 auto;
+    padding-block: 28px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    text-align: center;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2.4rem, 9vw, 3.6rem);
+    text-shadow: 0 0 24px rgba(79,134,255,.45);
+  }
+  .sub { color: var(--texto-suave); font-weight: 600; max-width: 34ch; line-height: 1.5; }
+  .datos { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .dato {
+    background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 999px;
+    padding: 8px 16px; font-weight: 600; font-size: .95rem; font-variant-numeric: tabular-nums;
+  }
+  .dato b { color: var(--azul-suave); }
+
+  svg#ramo { width: 100%; max-width: 460px; height: auto; display: block; overflow: visible; }
+  .flor { cursor: pointer; }
+  .flor:focus { outline: none; }
+  .flor:focus-visible > g, .flor.elegida > g { filter: drop-shadow(0 0 6px rgba(157,186,255,.9)); }
+  .nueva { transform-box: fill-box; transform-origin: center; animation: abrir 1.6s cubic-bezier(.2,.9,.3,1.3) both .4s; }
+  @keyframes abrir { from { transform: scale(0) rotate(-60deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  .tallo-nuevo { stroke-dasharray: 400; animation: crecer 1s ease-out both; }
+  @keyframes crecer { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+
+  .mensaje {
+    width: 100%; background: var(--noche); border: 1px solid var(--linea); border-radius: 16px;
+    padding: 20px 22px; text-align: left; min-height: 120px;
+  }
+  .mensaje small { display: block; color: var(--azul-suave); font-weight: 600; letter-spacing: .04em; margin-bottom: 8px; }
+  .mensaje p { font-size: 1.12rem; line-height: 1.6; }
+  .pista { color: var(--texto-suave); font-size: .9rem; }
+  .leyenda { display: flex; gap: 18px; justify-content: center; color: var(--texto-suave); font-size: .9rem; font-weight: 600; }
+  .leyenda span { display: flex; align-items: center; gap: 6px; }
+  .leyenda i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  a.volver { color: var(--azul-suave); font-weight: 600; margin-top: 8px; }
+  a.volver:focus-visible { outline: 2px solid var(--azul-suave); outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nueva, .tallo-nuevo { animation: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tu ramo, Blanca</h1>
+  <p class="sub">Cada día que pasamos juntos nace una flor nueva. Vuelve mañana y verás cómo crece 💐</p>
+  <div class="datos">
+    <div class="dato">Día <b id="dia">1</b> juntos</div>
+    <div class="dato">Próxima flor en <b id="falta">--:--:--</b></div>
+  </div>
+
+  <svg id="ramo" viewBox="0 0 400 500" role="img" aria-label="Ramo de peonías y hortensias, una flor por cada día juntos"></svg>
+
+  <div class="mensaje" aria-live="polite">
+    <small id="mDia"></small>
+    <p id="mTexto"></p>
+  </div>
+  <p class="pista">Toca cualquier flor para leer su mensaje</p>
+  <div class="leyenda">
+    <span><i style="background:#f2a7c3"></i>Peonías</span>
+    <span><i style="background:#6f9bff"></i>Hortensias</span>
+  </div>
+  <a class="volver" href="./">← Volver a tu carta</a>
+</main>
+
+<script>
+  // ✏️ Personaliza aquí
+  const INICIO = new Date(2026, 9, 19); // 19 oct 2026, la noche en el carro
+
+  // Un mensaje por día (día 1 = 19 de octubre)
+  const MENSAJES = [
+    "La noche en el carro en que te pedí ser mi novia. Aquí empezó todo.",
+    "Primer día completo siendo tu novio, y ya no me imagino de otra forma.",
+    "Me encanta cómo te expresas. Podría escucharte horas… y ya sabes que sí lo hago 😂",
+    "Gracias por ser tan natural conmigo. Nunca cambies eso.",
+    "Tus ojitos detrás de esos lentes son mi parte favorita del día 🤓",
+    "Pendiente: cenar en un restaurante, tú y yo. Ya casi.",
+    "Una semana. Siete flores, y todavía me faltan muchas por darte.",
+    "Tu sonrisa me arregla cualquier día pesado.",
+    "Hoy suena un corrido de Alemán y pienso en ti.",
+    "Tu madurez me da paz. Contigo me siento tranquilo.",
+    "Gregory no sabe que esa noche de películas me desvelé enamorándome de ti.",
+    "Siempre te ves bonita, te pongas lo que te pongas 🖤",
+    "Un día te voy a llevar a conocer Puebla. Prometido.",
+    "Dos semanas contigo. Se pasaron volando, como esa \"horita\" que nunca fue horita.",
+    "Me gusta que conmigo no tienes que fingir nada.",
+    "La playa nos está esperando 🏖️",
+    "Si un día estás triste, vuelve aquí y cuenta tus flores. Cada una es un día que te elegí.",
+    "Bizarrap de fondo y tú a mi lado: plan perfecto.",
+    "Gracias por abrirme las puertas y dejarme conocerte.",
+    "Veinte flores. Veinte días queriéndote más.",
+    "Tres semanas. Me encanta ser tu hombre.",
+    "Eres lo primero en lo que pienso al despertar.",
+    "No me arrepiento ni tantito de haberte mandado ese mensaje.",
+    "Te debo muchas peonías de verdad. Las voy a ir pagando 😉",
+    "Me gusta cómo eres conmigo y cómo eres con los demás.",
+    "Contigo todo se siente fácil.",
+    "Cada día que pasa te admiro más.",
+    "Cuatro semanas. Y apenas estamos empezando.",
+    "Gracias por tenerme paciencia.",
+    "Me haces querer ser mejor cada día.",
+    "Mañana cumplimos un mes 🥹",
+    "¡Un mes juntos, mi niña preciosa! 🖤💙",
+  ];
+  // Después del primer mes se repiten estos
+  const SIEMPRE = [
+    "Otro día más eligiéndote.",
+    "Tu sonrisa sigue siendo mi parte favorita del día.",
+    "Me encanta cómo te expresas.",
+    "Gracias por ser tú, sin máscaras.",
+    "Contigo las horas se pasan volando.",
+    "Todavía nos falta Puebla, la playa y mil cenas más.",
+    "Tus lentes, tus ojitos, tu risa: todo me encanta.",
+    "Te amo un poquito más que ayer.",
+  ];
+
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const UN_DIA = 864e5;
+
+  function hoyEs() {
+    const prueba = new URLSearchParams(location.search).get('dia');
+    if (prueba && +prueba > 0) return Math.floor(+prueba);
+    const ahora = new Date();
+    const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+    return Math.max(1, Math.round((inicioHoy - INICIO) / UN_DIA) + 1);
+  }
+  function fechaDe(n) {
+    const f = new Date(INICIO.getFullYear(), INICIO.getMonth(), INICIO.getDate() + n - 1);
+    return `${f.getDate()} de ${MESES[f.getMonth()]}`;
+  }
+  function mensajeDe(n) {
+    if (n <= MENSAJES.length) return MENSAJES[n - 1];
+    const f = new Date(INICIO.getFullYear(), INICIO.getMonth(), INICIO.getDate() + n - 1);
+    if (f.getDate() === 19) {
+      const meses = (f.getFullYear() - 2026) * 12 + f.getMonth() - 9;
+      return meses % 12 === 0
+        ? `¡${meses / 12} ${meses === 12 ? 'año' : 'años'} juntos! 🖤💙 Gracias por cada día.`
+        : `¡Cumplimos ${meses} meses! 🖤💙 Te amo, mi niña preciosa.`;
+    }
+    return SIEMPRE[n % SIEMPRE.length];
+  }
+
+  // Aleatorio con semilla: cada flor se ve igual todos los días
+  function azar(semilla) {
+    let a = semilla * 9301 + 49297;
+    return () => {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  const ROSAS = [['#f7c6d8', '#f2a7c3', '#e98bb0', '#c9547f'], ['#ffd6e4', '#f6b3cb', '#ee93b5', '#d0668f'], ['#f9d0dc', '#ef9fbb', '#df7ba3', '#b94a74']];
+  const AZULES = ['#6f9bff', '#8fb0ff', '#5a7fe0', '#a99cf0', '#7fa8f5', '#94c3ff'];
+
+  function peonia(r) {
+    const c = ROSAS[Math.floor(r() * ROSAS.length)];
+    const giro = r() * 360;
+    let s = '';
+    for (let i = 0; i < 9; i++) s += `<ellipse cx="0" cy="-15" rx="11" ry="15" fill="${c[1]}" stroke="rgba(0,0,0,.18)" stroke-width=".6" transform="rotate(${giro + i * 40})"/>`;
+    for (let i = 0; i < 7; i++) s += `<ellipse cx="0" cy="-9" rx="9" ry="11" fill="${c[0]}" stroke="rgba(0,0,0,.14)" stroke-width=".6" transform="rotate(${giro + 20 + i * 51})"/>`;
+    for (let i = 0; i < 5; i++) s += `<ellipse cx="0" cy="-4.5" rx="6" ry="7.5" fill="${c[2]}" stroke="rgba(0,0,0,.14)" stroke-width=".5" transform="rotate(${giro + 10 + i * 72})"/>`;
+    s += `<circle r="4" fill="${c[3]}"/>`;
+    return s;
+  }
+  function hortensia(r) {
+    let s = '';
+    const base = Math.floor(r() * AZULES.length);
+    for (let i = 0; i < 19; i++) {
+      const rad = 4.6 * Math.sqrt(i + .3), ang = i * 2.39996;
+      const x = rad * Math.cos(ang), y = rad * Math.sin(ang);
+      const col = AZULES[(base + Math.floor(r() * 3)) % AZULES.length];
+      const g = r() * 90;
+      s += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${g.toFixed(0)})">`;
+      for (let p = 0; p < 4; p++) s += `<ellipse cx="0" cy="-3.3" rx="3" ry="4" fill="${col}" stroke="rgba(0,0,0,.2)" stroke-width=".4" transform="rotate(${p * 90})"/>`;
+      s += `<circle r="1.1" fill="#eef3ff"/></g>`;
+    }
+    return s;
+  }
+
+  function dibujar(n) {
+    const svg = document.getElementById('ramo');
+    const K = 17, TAM = 34, CX = 200, CY = 205;
+    const radio = K * Math.sqrt(n) + TAM;
+    const esc = Math.min(1, 150 / radio);
+    const tam = TAM * esc;
+
+    const flores = [];
+    for (let i = 0; i < n; i++) {
+      const r = azar(i + 1);
+      const rad = K * Math.sqrt(i + .5) * esc, ang = i * 2.39996 - Math.PI / 2;
+      flores.push({
+        dia: i + 1, r,
+        x: CX + rad * Math.cos(ang) + (r() - .5) * 4 * esc,
+        y: CY + rad * Math.sin(ang) * .82 + (r() - .5) * 4 * esc,
+      });
+    }
+
+    let tallos = '', hojas = '', cabezas = '';
+    flores.forEach(f => {
+      const nueva = f.dia === n;
+      const sx = CX + (f.x - CX) * .12, sy = 410;
+      const qx = CX + (f.x - CX) * .45, qy = (f.y + 370) / 2;
+      tallos += `<path d="M${sx.toFixed(1)} ${sy} Q${qx.toFixed(1)} ${qy.toFixed(1)} ${f.x.toFixed(1)} ${f.y.toFixed(1)}" stroke="#3d7a52" stroke-width="${(2.4 * Math.max(esc, .6)).toFixed(1)}" fill="none"${nueva ? ' class="tallo-nuevo"' : ''}/>`;
+      if (f.dia % 3 === 0) {
+        const hx = (qx + f.x) / 2, hy = (qy + f.y) / 2 + 12 * esc;
+        const lado = f.x < CX ? -1 : 1;
+        hojas += `<ellipse cx="${(hx + lado * 8 * esc).toFixed(1)}" cy="${hy.toFixed(1)}" rx="${(10 * esc).toFixed(1)}" ry="${(4 * esc).toFixed(1)}" fill="#2f6b45" transform="rotate(${lado * 30} ${hx.toFixed(1)} ${hy.toFixed(1)})"/>`;
+      }
+      const forma = f.dia % 2 === 1 ? peonia(f.r) : hortensia(f.r);
+      cabezas += `<g class="flor${nueva ? ' nueva' : ''}" data-dia="${f.dia}" tabindex="0" role="button" aria-label="Flor del día ${f.dia}">
+        <g transform="translate(${f.x.toFixed(1)} ${f.y.toFixed(1)}) scale(${(tam / 30).toFixed(3)})">${forma}</g></g>`;
+    });
+
+    const florero = `
+      <defs>
+        <linearGradient id="vidrio" x1="0" x2="1">
+          <stop offset="0" stop-color="#9dbaff" stop-opacity=".10"/>
+          <stop offset=".35" stop-color="#9dbaff" stop-opacity=".28"/>
+          <stop offset="1" stop-color="#4f86ff" stop-opacity=".08"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="200" cy="488" rx="80" ry="8" fill="#000" opacity=".5"/>
+      <path d="M165 370 Q160 395 145 420 Q130 450 150 475 Q160 488 200 488 Q240 488 250 475 Q270 450 255 420 Q240 395 235 370 Z"
+            fill="url(#vidrio)" stroke="#9dbaff" stroke-opacity=".55" stroke-width="1.5"/>
+      <ellipse cx="200" cy="370" rx="35" ry="6" fill="none" stroke="#9dbaff" stroke-opacity=".6" stroke-width="1.5"/>
+      <path d="M160 425 Q155 450 168 470" stroke="#fff" stroke-opacity=".25" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M150 440 Q200 452 250 440" stroke="#4f86ff" stroke-opacity=".35" stroke-width="1" fill="none"/>`;
+
+    svg.innerHTML = tallos + hojas + florero + cabezas;
+
+    svg.querySelectorAll('.flor').forEach(el => {
+      const elegir = () => mostrar(+el.dataset.dia);
+      el.addEventListener('click', elegir);
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(); } });
+    });
+  }
+
+  function mostrar(d) {
+    document.querySelectorAll('.flor').forEach(el => el.classList.toggle('elegida', +el.dataset.dia === d));
+    const tipo = d % 2 === 1 ? 'Peonía' : 'Hortensia';
+    document.getElementById('mDia').textContent = `${tipo} del día ${d} · ${fechaDe(d)}`;
+    document.getElementById('mTexto').textContent = mensajeDe(d);
+  }
+
+  function reloj() {
+    const ahora = new Date();
+    const manana = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + 1);
+    const s = Math.floor((manana - ahora) / 1000);
+    const dos = v => String(v).padStart(2, '0');
+    document.getElementById('falta').textContent = `${dos(Math.floor(s / 3600))}:${dos(Math.floor(s % 3600 / 60))}:${dos(s % 60)}`;
+    if (s <= 0) iniciar();
+  }
+
+  let diaActual = 0;
+  function iniciar() {
+    const n = hoyEs();
+    if (n === diaActual) return;
+    diaActual = n;
+    document.getElementById('dia').textContent = n;
+    dibujar(n);
+    mostrar(n);
+  }
+  iniciar();
+  reloj();
+  setInterval(() => { reloj(); iniciar(); }, 1000);
+</script>
+</body>
+</html>
