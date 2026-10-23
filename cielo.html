@@ -49,7 +49,7 @@
     alcyone: [3.791, 24.11, 2.87], atlas: [3.819, 24.05, 3.62], electra: [3.747, 24.11, 3.7], maia: [3.763, 24.37, 3.87], merope: [3.772, 23.95, 4.18], taygeta: [3.753, 24.47, 4.3],
     antares: [16.490, -26.43, 1.06], espiga: [13.420, -11.16, 0.97], formalhaut: [22.961, -29.62, 1.16, 'Fomalhaut'],
     deneb: [20.690, 45.28, 1.25, 'Deneb'], sadr: [20.370, 40.26, 2.23], gienah: [20.770, 33.97, 2.48], deltaCyg: [19.750, 45.13, 2.87], albireo: [19.512, 27.96, 3.05],
-    regulo: [10.139, 11.97, 1.35], pollux: [7.755, 28.03, 1.14, 'Pólux'], castor: [7.577, 31.89, 1.58, 'Cástor'], alhena: [6.629, 16.40, 1.93], mebsuta: [6.383, 25.13, 3.0], wasat: [7.335, 21.98, 3.5],
+    regulo: [10.139, 11.97, 1.35], pollux: [7.755, 28.03, 1.14, 'Pólux'], castor: [7.577, 31.89, 1.58, 'Cástor', 'izq'], alhena: [6.629, 16.40, 1.93], mebsuta: [6.383, 25.13, 3.0], wasat: [7.335, 21.98, 3.5],
     dubhe: [11.062, 61.75, 1.79], merak: [11.031, 56.38, 2.37], phecda: [11.897, 53.69, 2.44], megrez: [12.257, 57.03, 3.31], alioth: [12.900, 55.96, 1.77], mizar: [13.399, 54.93, 2.23], alkaid: [13.792, 49.31, 1.86],
     polar: [2.530, 89.26, 1.98, 'Estrella Polar'],
     mirfak: [3.405, 49.86, 1.79], algol: [3.136, 40.96, 2.1], deltaPer: [3.715, 47.79, 3.0], gammaPer: [3.080, 53.51, 2.9],
@@ -167,10 +167,12 @@
     // Nombres
     ctx.font = `600 ${Math.round(T / 46)}px Quicksand, sans-serif`;
     ctx.fillStyle = 'rgba(233,237,247,.8)';
-    ctx.textAlign = 'left';
     for (const k in puntos) {
       const n = E[k][3];
-      if (n) ctx.fillText(n, puntos[k].x + T / 90, puntos[k].y - T / 110);
+      if (!n) continue;
+      const izq = E[k][4] === 'izq';
+      ctx.textAlign = izq ? 'right' : 'left';
+      ctx.fillText(n, puntos[k].x + (izq ? -1 : 1) * T / 90, puntos[k].y - T / 110);
     }
     ctx.font = `italic 600 ${Math.round(T / 40)}px Quicksand, sans-serif`;
     ctx.fillStyle = 'rgba(242,167,195,.85)';
